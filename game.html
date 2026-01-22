@@ -1,0 +1,153 @@
+import json
+import os
+from datetime import date
+
+SAVE_FILE = "lifequest_save.json"
+
+# ------------------ DATA ------------------
+TASKS = [
+    {"id": 1, "title": "Drink water", "xp": 5},
+    {"id": 2, "title": "Clean one area", "xp": 10},
+]
+
+QUESTS = [
+    {
+        "id": "reset-space",
+        "title": "Reset My Space",
+        "steps": [
+            {"id": 1, "text": "Pick up floor", "done": False},
+            {"id": 2, "text": "Organize desk", "done": False},
+            {"id": 3, "text": "Make bed", "done": False},
+        ],
+        "xp_per_step": 15,
+        "bonus_xp": 20,
+    }
+]
+
+DIALOGUE = {
+    "great": "👽 You're glowing today. Let's ride that wave.",
+    "okay": "👽 One small win is enough today.",
+    "tired": "👽 Rest counts. I'm proud of you anyway.",
+}
+
+# ------------------ SAVE / LOAD ------------------
+def load_game():
+    if os.path.exists(SAVE_FILE):
+        with open(SAVE_FILE, "r") as f:
+            return json.load(f)
+    return {
+        "xp": 0,
+        "level": 1,
+        "completed_tasks": [],
+        "quests": QUESTS,
+        "last_checkin": "",
+        "mood": None,
+    }
+
+def save_game(state):
+    with open(SAVE_FILE, "w") as f:
+        json.dump(state, f, indent=2)
+
+# ------------------ GAME LOGIC ------------------
+def buddy(level):
+    if level < 3:
+        return "👽😴 Sleepy Chaos Buddy"
+    elif level < 6:
+        return "👽😊 Focused Gremlin Buddy"
+    return "👽🚀 Confident Life Partner"
+
+def gain_xp(state, amount):
+    state["xp"] += amount
+    level_up_xp = state["level"] * 50
+    if state["xp"] >= level_up_xp:
+        state["xp"] -= level_up_xp
+        state["level"] += 1
+        print("\n🎉 LEVEL UP! You are now Level", state["level"])
+
+# ------------------ DAILY CHECK-IN ------------------
+def daily_checkin(state):
+    today = str(date.today())
+    if state["last_checkin"] == today:
+        return
+
+    print("\nHow are you feeling today?")
+    print("1) 😄 Great")
+    print("2) 😐 Okay")
+    print("3) 😴 Tired")
+
+    choice = input("> ").strip()
+    mood_map = {"1": "great", "2": "okay", "3": "tired"}
+
+    mood = mood_map.get(choice, "okay")
+    state["mood"] = mood
+    state["last_checkin"] = today
+
+    print("\n" + DIALOGUE[mood])
+
+# ------------------ TASKS ------------------
+def show_tasks(state):
+    print("\nDaily Tasks:")
+    for t in TASKS:
+        status = "✔" if t["id"] in state["completed_tasks"] else " "
+        print(f"[{status}] {t['id']}. {t['title']} (+{t['xp']} XP)")
+
+    choice = input("\nComplete task ID or ENTER to skip: ").strip()
+    if choice.isdigit():
+        task_id = int(choice)
+        for t in TASKS:
+            if t["id"] == task_id and task_id not in state["completed_tasks"]:
+                gain_xp(state, t["xp"])
+                state["completed_tasks"].append(task_id)
+                print("✅ Task completed!")
+
+# ------------------ QUESTS ------------------
+def show_quests(state):
+    print("\nBig Life Quests:")
+    for q in state["quests"]:
+        print(f"\n{q['title']}")
+        for s in q["steps"]:
+            status = "✔" if s["done"] else " "
+            print(f"  [{status}] {s['id']}. {s['text']}")
+
+        step = input("Complete step ID or ENTER to skip: ").strip()
+        if step.isdigit():
+            step_id = int(step)
+            for s in q["steps"]:
+                if s["id"] == step_id and not s["done"]:
+                    s["done"] = True
+                    gain_xp(state, q["xp_per_step"])
+                    print("🧩 Step completed!")
+
+            if all(s["done"] for s in q["steps"]):
+                print("🏆 QUEST COMPLETE! Bonus XP!")
+                gain_xp(state, q["bonus_xp"])
+
+# ------------------ MAIN LOOP ------------------
+def main():
+    state = load_game()
+    print("\n=== LIFEQUEST BUDDY ===")
+    print(buddy(state["level"]))
+
+    daily_checkin(state)
+
+    while True:
+        print(f"\nLevel {state['level']} | XP {state['xp']}/{state['level'] * 50}")
+        print("1) Tasks")
+        print("2) Quests")
+        print("3) Save & Exit")
+
+        choice = input("> ").strip()
+
+        if choice == "1":
+            show_tasks(state)
+        elif choice == "2":
+            show_quests(state)
+        elif choice == "3":
+            save_game(state)
+            print("💾 Game saved. See you tomorrow!")
+            break
+
+        save_game(state)
+
+if __name__ == "__main__":
+    main()
