@@ -1,2 +1,2 @@
 def load():
-  game.html main()
+  game.main()
