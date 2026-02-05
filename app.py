@@ -1,5 +1,14 @@
-def load():
-  print("working")
-  game.main()
+import webbrowser
+import os
 
-load()
+# Get the absolute path to your file
+file_path = os.path.abspath("index.html")
+
+# Open it in a new tab
+webbrowser.open(f"file://{game.html}")
+
+#def load():
+#  print("working")
+#  game.html
+
+#load()
