@@ -5,7 +5,7 @@ import os
 file_path = os.path.abspath("index.html")
 
 # Open it in a new tab
-webbrowser.open(f"file://{game.html}")
+webbrowser.open(f"file://{game}")
 
 #def load():
 #  print("working")
