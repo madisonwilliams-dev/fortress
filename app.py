@@ -1,14 +1,14 @@
-import webbrowser
+from flask import Flask, render_template
 import os
 
-# Get the absolute path to your file
-file_path = os.path.abspath("game.html")
+app = Flask(__name__)
 
-# Open it in a new tab
-webbrowser.open(f"file://{file_path}")
-print("HELLO THERE SON")
-#def load():
-#  print("working")
-#  game.html
+@app.route('/')
+def home():
+    # Flask looks in the /templates folder by default
+    return render_template('game.html')
 
-#load()
+if __name__ == '__main__':
+    # Use the PORT environment variable provided by Render
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
