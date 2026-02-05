@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, make_response
 import os
 
 app = Flask(__name__)
@@ -7,7 +7,9 @@ app = Flask(__name__)
 def home():
     # Flask looks in the /templates folder by default
     # This creates a response object so we can manually set the content type
-    return render_template('index.html')  # Flask handles the "text/html" header for you
+    response = make_response(render_template('index.html'))
+    response.headers['Content-Type'] = 'text/html'
+    return response
 
 
 if __name__ == '__main__':
