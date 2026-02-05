@@ -7,7 +7,7 @@ app = Flask(__name__)
 def home():
     # Flask looks in the /templates folder by default
     # This creates a response object so we can manually set the content type
-    response = make_response(render_template('index.html'))
+    response = make_response(render_template('game.html'))
     response.headers['Content-Type'] = 'text/html'
     return response
 
